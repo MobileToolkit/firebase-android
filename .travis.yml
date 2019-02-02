@@ -1,0 +1,26 @@
+language: android
+jdk: oraclejdk8
+sudo: false
+
+android:
+  components:
+  - platform-tools
+  - tools
+  - build-tools-28.0.3
+  - android-28
+
+cache:
+  directories:
+  - .autoconf
+  - $HOME/.m2
+
+script:
+    - ./gradlew clean assembleDebug test lint
+
+deploy:
+  provider: script
+  script: ./gradlew bintrayUpload
+  skip_cleanup: true
+  dry-run: false
+  on:
+    tags: true

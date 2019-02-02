@@ -1,0 +1,91 @@
+plugins {
+    id 'com.jfrog.bintray' version '1.8.4'
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'digital.wup.android-maven-publish'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode rootProject.ext.gitVersionCode
+        versionName rootProject.ext.gitVersionName
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+    lintOptions {
+        lintConfig file('lint.xml')
+//        htmlReport true
+//        htmlOutput file('lint-report.html')
+        abortOnError true
+        warningsAsErrors true
+    }
+}
+
+dependencies {
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.androidSupportLibraryVersion}"
+    implementation "com.android.support:recyclerview-v7:${rootProject.ext.androidSupportLibraryVersion}"
+    implementation "com.android.support:support-v4:${rootProject.ext.androidSupportLibraryVersion}"
+    api 'com.google.firebase:firebase-firestore:18.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlinVersion}"
+
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:${rootProject.ext.kotlinVersion}"
+}
+
+archivesBaseName = "${rootProject.ext.groupId}.firestore"
+
+publishing {
+    publications {
+        firestore(MavenPublication) {
+            groupId = rootProject.ext.groupId
+            artifactId = 'firestore'
+            version = android.defaultConfig.versionName
+
+            from components.android
+        }
+    }
+}
+
+bintray {
+    user = rootProject.ext.bintrayUser
+    key = rootProject.ext.bintrayAPIKey
+    dryRun = false
+    override = false
+    publish = true
+    pkg {
+        repo = 'public'
+        name = project.name
+        userOrg = 'mobiletoolkit'
+        licenses = ['MIT']
+        vcsUrl = rootProject.ext.vcsUrl
+
+        version {
+            name = android.defaultConfig.versionName
+            released  = new Date()
+            vcsTag = android.defaultConfig.versionName
+            gpg {
+                sign = true
+                passphrase = rootProject.ext.bintrayGPGPassword
+            }
+        }
+    }
+    publications = ['firestore']
+}

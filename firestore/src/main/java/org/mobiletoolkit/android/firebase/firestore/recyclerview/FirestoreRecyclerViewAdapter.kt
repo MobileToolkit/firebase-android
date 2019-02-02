@@ -17,6 +17,10 @@ abstract class FirestoreRecyclerViewAdapter<ViewHolder : RecyclerView.ViewHolder
         data = entities ?: listOf()
     }
 
+    init {
+        this.reloadRepositoryData()
+    }
+
     override fun reloadRepositoryData() {
         repository.get(repositoryListener)
     }

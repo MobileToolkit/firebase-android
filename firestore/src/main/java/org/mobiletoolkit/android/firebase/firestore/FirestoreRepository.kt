@@ -308,7 +308,10 @@ interface FirestoreRepository<Entity : FirestoreModel> : AsyncRepository<String,
         identifiers: List<String?>? = null
     ): Task<Boolean> {
         if (debugEnabled) {
-            Log.d(TAG, "deleteDocuments -> collectionPath: $collectionPath | entities: $entities | identifiers: $identifiers")
+            Log.d(
+                TAG,
+                "deleteDocuments -> collectionPath: $collectionPath | entities: $entities | identifiers: $identifiers"
+            )
         }
 
         //TODO - split into batches of 20

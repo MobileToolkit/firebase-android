@@ -155,16 +155,16 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel> : FirestoreRep
 
         val listenerRegistration =
             collectionReference.document(identifier).addSnapshotListener { documentSnapshot, exception ->
-            repositoryListener(
-                documentSnapshot?.let {
-                    if (it.exists()) {
-                        it.toObjectWithReference(entityClazz)
-                    } else null
-                },
-                null,
-                exception
-            )
-        }
+                repositoryListener(
+                    documentSnapshot?.let {
+                        if (it.exists()) {
+                            it.toObjectWithReference(entityClazz)
+                        } else null
+                    },
+                    null,
+                    exception
+                )
+            }
 
         documentListenerRegistration = listenerRegistration
 

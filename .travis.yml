@@ -15,12 +15,12 @@ cache:
   - $HOME/.m2
 
 script:
-    - ./gradlew clean assembleDebug test lint
+- ./gradlew clean assembleDebug test lint
 
 deploy:
   provider: script
-  script: ./gradlew bintrayUpload
-  skip_cleanup: true
+  script: ./gradlew clean assembleRelease generatePomFileForFirestorePublication bintrayUpload
+  skip_cleanup: false
   dry-run: false
   on:
     tags: true

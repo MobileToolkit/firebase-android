@@ -30,6 +30,7 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url 'https://dl.bintray.com/mobiletoolkit/public' }
         google()
         jcenter()
         mavenCentral()

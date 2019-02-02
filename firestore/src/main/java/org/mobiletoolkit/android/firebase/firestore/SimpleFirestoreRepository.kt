@@ -4,13 +4,17 @@ import android.annotation.SuppressLint
 import android.util.Log
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
+import org.mobiletoolkit.android.repository.AsyncRepository
 import org.mobiletoolkit.android.repository.AsyncRepositoryCallback
 
 /**
  * Created by Sebastian Owodzin on 10/12/2018.
  */
 @SuppressLint("LongLogTag")
-abstract class SimpleFirestoreRepository<Entity : FirestoreModel> : FirestoreRepository<Entity> {
+abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
+    override val debugEnabled: Boolean = false
+) : FirestoreRepository<Entity>,
+    AsyncRepository<String, Entity> {
 
     companion object {
         private const val TAG = "SimpleFirestoreRepository"

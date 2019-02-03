@@ -79,13 +79,7 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             )
         }
 
-        return with(collectionReference) {
-            (identifier?.let { docId ->
-                document(docId)
-            } ?: document()).set(entity).continueWith {
-                it.isSuccessful
-            }
-        }
+        return createDocuments(listOf(entity), identifier?.let { listOf(it) })
     }
 
     fun createDocuments(
@@ -99,20 +93,6 @@ interface FirestoreRepository<Entity : FirestoreModel> {
                         "\n  * identifier: $identifiers"
             )
         }
-
-//        //TODO - split into batches of 20
-//
-//        val batch = db.batch()
-//
-//        entities.forEachIndexed { index, entity ->
-//            val docRef = with(collectionReference) {
-//                (identifiers?.get(index)?.let { docId ->
-//                    document(docId)
-//                } ?: document())
-//            }
-//
-//            batch.set(docRef, entity)
-//        }
 
         return batch(createData = entities.zip(identifiers ?: listOf())).continueWith {
             it.isSuccessful
@@ -129,11 +109,7 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             )
         }
 
-        return entity._identifier()?.let { identifier ->
-            collectionReference.document(identifier).set(entity, SetOptions.merge()).continueWith {
-                it.isSuccessful
-            }
-        } ?: Tasks.forResult(false)
+        return updateDocuments(listOf(entity))
     }
 
     fun updateDocuments(
@@ -145,16 +121,6 @@ interface FirestoreRepository<Entity : FirestoreModel> {
                         "\n  * entities: $entities"
             )
         }
-
-//        //TODO - split into batches of 20
-//
-//        val batch = db.batch()
-//
-//        entities.forEach { entity ->
-//            entity.documentReference?.let { docRef ->
-//                batch.set(docRef, entity, SetOptions.merge())
-//            }
-//        }
 
         return batch(updateData = entities).continueWith {
             it.isSuccessful
@@ -171,9 +137,7 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             )
         }
 
-        return entity._identifier()?.let { identifier ->
-            deleteDocument(identifier)
-        } ?: Tasks.forResult(false)
+        return deleteDocuments(listOf(entity))
     }
 
     fun deleteDocument(
@@ -183,9 +147,7 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             Log.d(TAG, "deleteDocument -> collectionPath: $collectionPath | identifier: $identifier")
         }
 
-        return collectionReference.document(identifier).delete().continueWith {
-            it.isSuccessful
-        }
+        return deleteDocuments(null, listOf(identifier))
     }
 
     fun deleteDocuments(
@@ -200,21 +162,13 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             )
         }
 
-//        //TODO - split into batches of 20
-//
-//        val batch = db.batch()
-//
-//        entities?.forEach { entity ->
-//            entity.documentReference?.let { docRef ->
-//                batch.delete(docRef)
-//            }
-//        }
-//
-//        identifiers?.filterNotNull()?.forEach { identifier ->
-//            batch.delete(collectionReference.document(identifier))
-//        }
+        val deleteData = with((entities ?: identifiers)?.count() ?: 0) {
+            Log.d(TAG, "deleteDocument -> deleteData -> collectionPath: $collectionPath | count: $this")
 
-        return batch(deleteData = entities?.zip(identifiers ?: listOf())).continueWith {
+            (0 until this).map { entities?.get(it) to identifiers?.get(it) }
+        }
+
+        return batch(deleteData = deleteData).continueWith {
             it.isSuccessful
         }
     }
@@ -242,6 +196,10 @@ interface FirestoreRepository<Entity : FirestoreModel> {
         }
 
         val batches: List<WriteBatch> = operations.count().toRanges(500).map {
+            if (debugEnabled) {
+                Log.d(TAG, "batch -> range: $it")
+            }
+
             val batch = db.batch()
 
             operations.slice(it).forEach { slice ->

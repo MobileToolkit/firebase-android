@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/firebase-android.iml" filepath="$PROJECT_DIR$/firebase-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/firestore/firestore.iml" filepath="$PROJECT_DIR$/firestore/firestore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/remote-config/remote-config.iml" filepath="$PROJECT_DIR$/remote-config/remote-config.iml" />
     </modules>
   </component>
 </project>

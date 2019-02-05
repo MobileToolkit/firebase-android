@@ -15,6 +15,7 @@ To use the library, first include it your project using Gradle
 
 	dependencies {
 	    implementation 'org.mobiletoolkit.android.firebase:firestore:{RELEASE_TAG}'
+	    implementation 'org.mobiletoolkit.android.firebase:remote-config:{RELEASE_TAG}'
 	}
 
 

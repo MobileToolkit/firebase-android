@@ -1,1 +1,1 @@
-include ':firestore'
+include ':firestore', ':remote-config'

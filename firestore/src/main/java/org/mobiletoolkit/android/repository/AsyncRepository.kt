@@ -26,6 +26,43 @@ interface AsyncRepository<Identifier, Entity : Model<Identifier>> {
     fun delete(vararg identifiers: Identifier, callback: AsyncRepositoryCallback<Boolean>)
 
     fun get(callback: AsyncRepositoryCallback<List<Entity>>)
+
+    // Listeners
+
+    fun get(
+        identifier: Identifier,
+        listener: AsyncRepositoryListener<Entity, Entity>
+    )
+
+    fun get(listener: AsyncRepositoryListener<List<Entity>, Entity>)
+
+    fun releaseListener(listener: AsyncRepositoryListener<*, Entity>)
+
+    interface Change<T> {
+
+        enum class Type {
+            Added, Modified, Removed
+        }
+
+        val type: Type
+
+        val oldIndex: Int
+            get() = -1
+
+        val newIndex: Int
+
+        val data: T?
+            get() = null
+    }
 }
 
-typealias AsyncRepositoryCallback<DataType> = (data: DataType?, exception: Exception?) -> Unit
+typealias AsyncRepositoryCallback<DataType> = (
+    data: DataType?,
+    exception: Exception?
+) -> Unit
+
+typealias AsyncRepositoryListener<DataType, ChangeType> = (
+    data: DataType?,
+    changeSet: Set<AsyncRepository.Change<ChangeType>>?,
+    exception: Exception?
+) -> Unit

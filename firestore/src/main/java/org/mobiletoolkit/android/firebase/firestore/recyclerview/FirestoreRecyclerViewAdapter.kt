@@ -2,8 +2,8 @@ package org.mobiletoolkit.android.firebase.firestore.recyclerview
 
 import android.support.v7.widget.RecyclerView
 import org.mobiletoolkit.android.firebase.firestore.FirestoreModel
-import org.mobiletoolkit.android.firebase.firestore.FirestoreRepositoryListener
 import org.mobiletoolkit.android.firebase.firestore.SimpleFirestoreRepository
+import org.mobiletoolkit.android.repository.AsyncRepositoryListener
 import kotlin.properties.Delegates
 
 /**
@@ -17,7 +17,7 @@ abstract class FirestoreRecyclerViewAdapter<ViewHolder : RecyclerView.ViewHolder
         onDataChanged(oldValue, newValue)
     }
 
-    protected open val repositoryListener: FirestoreRepositoryListener<List<Entity>, Entity> = { entities, _, _ ->
+    protected open val repositoryListener: AsyncRepositoryListener<List<Entity>, Entity> = { entities, _, _ ->
         data = entities ?: listOf()
     }
 
@@ -26,6 +26,7 @@ abstract class FirestoreRecyclerViewAdapter<ViewHolder : RecyclerView.ViewHolder
     }
 
     open fun reloadRepositoryData() {
+        repository.releaseListener(repositoryListener)
         repository.get(repositoryListener)
     }
 

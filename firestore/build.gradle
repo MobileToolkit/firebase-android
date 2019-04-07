@@ -41,7 +41,7 @@ dependencies {
     implementation "com.android.support:appcompat-v7:${rootProject.ext.androidSupportLibraryVersion}"
     implementation "com.android.support:recyclerview-v7:${rootProject.ext.androidSupportLibraryVersion}"
     implementation "com.android.support:support-v4:${rootProject.ext.androidSupportLibraryVersion}"
-    implementation 'com.google.firebase:firebase-firestore:18.0.0'
+    implementation 'com.google.firebase:firebase-firestore:18.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlinVersion}"
     implementation 'org.mobiletoolkit.android.extensions:extensions-kotlin:1.0.1'
 

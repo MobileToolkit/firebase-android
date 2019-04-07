@@ -3,10 +3,7 @@ package org.mobiletoolkit.android.firebase.firestore
 import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.WriteBatch
+import com.google.firebase.firestore.*
 import org.mobiletoolkit.android.extensions.kotlin.toRanges
 
 /**
@@ -35,6 +32,9 @@ interface FirestoreRepository<Entity : FirestoreModel> {
     val debugEnabled: Boolean
         get() = false
 
+    fun documentReference(identifier: String): DocumentReference =
+        collectionReference.document(identifier)
+
     fun documentExists(
         identifier: String
     ): Task<Boolean> {
@@ -44,7 +44,7 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             )
         }
 
-        return collectionReference.document(identifier).get().continueWith {
+        return documentReference(identifier).get().continueWith {
             it.result?.exists() == true
         }
     }
@@ -58,7 +58,7 @@ interface FirestoreRepository<Entity : FirestoreModel> {
             )
         }
 
-        return collectionReference.document(identifier).get().continueWith {
+        return documentReference(identifier).get().continueWith {
             it.result?.let { doc ->
                 if (doc.exists()) {
                     doc.toObjectWithReference(entityClazz)

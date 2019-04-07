@@ -6,6 +6,8 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
 import org.mobiletoolkit.android.repository.AsyncRepository
 import org.mobiletoolkit.android.repository.AsyncRepositoryCallback
+import org.mobiletoolkit.android.repository.AsyncRepositoryListener
+import java.lang.ref.WeakReference
 
 /**
  * Created by Sebastian Owodzin on 10/12/2018.
@@ -13,8 +15,7 @@ import org.mobiletoolkit.android.repository.AsyncRepositoryCallback
 @SuppressLint("LongLogTag")
 abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
     override val debugEnabled: Boolean = false
-) : FirestoreRepository<Entity>,
-    AsyncRepository<String, Entity> {
+) : FirestoreRepository<Entity>, AsyncRepository<String, Entity> {
 
     companion object {
         private const val TAG = "SimpleFirestoreRepository"
@@ -144,55 +145,56 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
         }
     }
 
-    private var documentListenerRegistration: ListenerRegistration? = null
+    private val repositoryListeners: MutableMap<String, Pair<ListenerRegistration, WeakReference<*>>> = mutableMapOf()
 
-    open fun get(
-        identifier: String,
-        repositoryListener: FirestoreRepositoryListener<Entity, Entity>
-    ): ListenerRegistration {
+    override fun get(identifier: String, listener: AsyncRepositoryListener<Entity, Entity>) {
         if (debugEnabled) {
-            Log.d(TAG, "get -> collectionPath: $collectionPath | identifier: $identifier")
+            Log.d(TAG, "get(identifier: $identifier) | collectionPath: $collectionPath")
         }
 
-        documentListenerRegistration?.remove()
-        documentListenerRegistration = null
+        repositoryListeners.remove(identifier)?.first?.remove()
 
-        val listenerRegistration =
-            collectionReference.document(identifier).addSnapshotListener { documentSnapshot, exception ->
-                repositoryListener(
-                    documentSnapshot?.let {
-                        if (it.exists()) {
-                            it.toObjectWithReference(entityClazz)
-                        } else null
-                    },
-                    null,
-                    exception
-                )
+        val listenerRegistration = documentReference(identifier).addSnapshotListener { documentSnapshot, exception ->
+            if (debugEnabled) {
+                Log.d(TAG, "get(identifier: $identifier) | collectionPath: $collectionPath -> addSnapshotListener\n" +
+                        "  * documentSnapshot: $documentSnapshot\n" +
+                        "  * exception: $exception")
             }
 
-        documentListenerRegistration = listenerRegistration
-
-        return listenerRegistration
-    }
-
-    private var collectionListenerRegistration: ListenerRegistration? = null
-
-    open fun get(
-        repositoryListener: FirestoreRepositoryListener<List<Entity>, Entity>
-    ): ListenerRegistration {
-        if (debugEnabled) {
-            Log.d(TAG, "get -> collectionPath: $collectionPath")
+            listener(
+                documentSnapshot?.let {
+                    if (it.exists()) {
+                        it.toObjectWithReference(entityClazz)
+                    } else null
+                },
+                null,
+                exception
+            )
         }
 
-        collectionListenerRegistration?.remove()
-        collectionListenerRegistration = null
+        repositoryListeners[identifier] = listenerRegistration to WeakReference(listener)
+    }
+
+    override fun get(listener: AsyncRepositoryListener<List<Entity>, Entity>) {
+        if (debugEnabled) {
+            Log.d(TAG, "get | collectionPath: $collectionPath")
+        }
+
+        repositoryListeners.remove(collectionPath)?.first?.remove()
 
         val listenerRegistration = collectionReference.addSnapshotListener { querySnapshot, exception ->
-            repositoryListener(
+            if (debugEnabled) {
+                Log.d(TAG, "get | collectionPath: $collectionPath -> addSnapshotListener\n" +
+                        "  * querySnapshot?.documents: ${querySnapshot?.documents}\n" +
+                        "  * querySnapshot?.documentChanges: ${querySnapshot?.documentChanges}\n" +
+                        "  * exception: $exception")
+            }
+
+            listener(
                 querySnapshot?.documents?.mapNotNull { it.toObjectWithReference(entityClazz) } ?: listOf(),
                 querySnapshot?.documentChanges?.mapNotNull {
-                    Change(
-                        Change.Type.from(it.type),
+                    FirebaseChange(
+                        it.type.toChangeType(),
                         it.oldIndex,
                         it.newIndex,
                         it.document.toObjectWithReference(entityClazz)
@@ -202,32 +204,28 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
             )
         }
 
-        documentListenerRegistration = listenerRegistration
-
-        return listenerRegistration
+        repositoryListeners[collectionPath] = listenerRegistration to WeakReference(listener)
     }
 
-    data class Change<T>(
-        val type: Type,
-        val oldIndex: Int = -1,
-        val newIndex: Int,
-        val data: T? = null
-    ) {
+    override fun releaseListener(listener: AsyncRepositoryListener<*, Entity>) {
+        repositoryListeners.entries.asSequence().filter {
+            it.value.second.get() == listener
+        }.map {
+            it.value.first.remove() // killing ListenerRegistration
 
-        enum class Type {
-            Added, Modified, Removed;
-
-            companion object {
-                fun from(type: DocumentChange.Type): Type {
-                    return Type.values().first { it.ordinal == type.ordinal }
-                }
-            }
+            it.key // returning key to remove from map in the next step
+        }.forEach {
+            repositoryListeners.remove(it)
         }
     }
-}
 
-typealias FirestoreRepositoryListener<DataType, ChangeType> = (
-    data: DataType?,
-    changeSet: Set<SimpleFirestoreRepository.Change<ChangeType>>?,
-    exception: Exception?
-) -> Unit
+    private fun DocumentChange.Type.toChangeType(): AsyncRepository.Change.Type =
+        AsyncRepository.Change.Type.values().first { it.ordinal == ordinal }
+
+    data class FirebaseChange<T>(
+        override val type: AsyncRepository.Change.Type,
+        override val oldIndex: Int = -1,
+        override val newIndex: Int,
+        override val data: T? = null
+    ) : AsyncRepository.Change<T>
+}

@@ -149,12 +149,18 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
 
     override fun get(identifier: String, listener: AsyncRepositoryListener<Entity, Entity>) {
         if (debugEnabled) {
-            Log.d(TAG, "get -> collectionPath: $collectionPath | identifier: $identifier")
+            Log.d(TAG, "get(identifier: $identifier) | collectionPath: $collectionPath")
         }
 
         repositoryListeners.remove(identifier)?.first?.remove()
 
         val listenerRegistration = documentReference(identifier).addSnapshotListener { documentSnapshot, exception ->
+            if (debugEnabled) {
+                Log.d(TAG, "get(identifier: $identifier) | collectionPath: $collectionPath -> addSnapshotListener\n" +
+                        "  * documentSnapshot: $documentSnapshot\n" +
+                        "  * exception: $exception")
+            }
+
             listener(
                 documentSnapshot?.let {
                     if (it.exists()) {
@@ -171,12 +177,19 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
 
     override fun get(listener: AsyncRepositoryListener<List<Entity>, Entity>) {
         if (debugEnabled) {
-            Log.d(TAG, "get -> collectionPath: $collectionPath")
+            Log.d(TAG, "get | collectionPath: $collectionPath")
         }
 
         repositoryListeners.remove(collectionPath)?.first?.remove()
 
         val listenerRegistration = collectionReference.addSnapshotListener { querySnapshot, exception ->
+            if (debugEnabled) {
+                Log.d(TAG, "get | collectionPath: $collectionPath -> addSnapshotListener\n" +
+                        "  * querySnapshot?.documents: ${querySnapshot?.documents}\n" +
+                        "  * querySnapshot?.documentChanges: ${querySnapshot?.documentChanges}\n" +
+                        "  * exception: $exception")
+            }
+
             listener(
                 querySnapshot?.documents?.mapNotNull { it.toObjectWithReference(entityClazz) } ?: listOf(),
                 querySnapshot?.documentChanges?.mapNotNull {

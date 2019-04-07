@@ -13,7 +13,7 @@ abstract class AsyncRecyclerViewAdapter<ViewHolder : RecyclerView.ViewHolder, Id
 ) : RecyclerView.Adapter<ViewHolder>() {
 
     protected open var data: List<Entity> by Delegates.observable(listOf()) { _, oldValue, newValue ->
-        onDataChanged(oldValue, newValue)
+        notifyDataSetChanged()
     }
 
     init {
@@ -29,8 +29,4 @@ abstract class AsyncRecyclerViewAdapter<ViewHolder : RecyclerView.ViewHolder, Id
     override fun getItemCount(): Int = data.count()
 
     protected open fun getDataItem(position: Int): Entity? = data[position]
-
-    protected open fun onDataChanged(oldValue: List<Entity>, newValue: List<Entity>) {
-        notifyDataSetChanged()
-    }
 }

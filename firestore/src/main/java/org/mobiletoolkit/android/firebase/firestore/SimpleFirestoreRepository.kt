@@ -161,15 +161,13 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
                         "  * exception: $exception")
             }
 
-            listener(
-                documentSnapshot?.let {
-                    if (it.exists()) {
-                        it.toObjectWithReference(entityClazz)
-                    } else null
-                },
-                null,
-                exception
-            )
+            val entity = documentSnapshot?.let {
+                if (it.exists()) {
+                    it.toObjectWithReference(entityClazz)
+                } else null
+            }
+
+            listener(entity, null, exception)
         }
 
         repositoryListeners[identifier] = listenerRegistration to WeakReference(listener)
@@ -190,18 +188,19 @@ abstract class SimpleFirestoreRepository<Entity : FirestoreModel>(
                         "  * exception: $exception")
             }
 
-            listener(
-                querySnapshot?.documents?.mapNotNull { it.toObjectWithReference(entityClazz) } ?: listOf(),
-                querySnapshot?.documentChanges?.mapNotNull {
-                    FirebaseChange(
-                        it.type.toChangeType(),
-                        it.oldIndex,
-                        it.newIndex,
-                        it.document.toObjectWithReference(entityClazz)
-                    )
-                }?.toSet(),
-                exception
-            )
+            val entities = querySnapshot?.documents?.mapNotNull { it.toObjectWithReference(entityClazz) } ?: listOf()
+            val changeSet = querySnapshot?.documentChanges?.mapNotNull {
+                val entity = it.document.toObjectWithReference(entityClazz)
+
+                FirebaseChange(
+                    it.type.toChangeType(),
+                    it.oldIndex,
+                    entities.indexOf(entity),
+                    entity
+                )
+            }?.toSet()
+
+            listener(entities, changeSet, exception)
         }
 
         repositoryListeners[collectionPath] = listenerRegistration to WeakReference(listener)

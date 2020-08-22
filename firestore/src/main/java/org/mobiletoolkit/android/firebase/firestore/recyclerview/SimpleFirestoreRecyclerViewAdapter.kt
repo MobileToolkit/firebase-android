@@ -1,6 +1,6 @@
 package org.mobiletoolkit.android.firebase.firestore.recyclerview
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import org.mobiletoolkit.android.firebase.firestore.FirestoreModel
 import org.mobiletoolkit.android.firebase.firestore.SimpleFirestoreRepository
 import org.mobiletoolkit.android.repository.AsyncRepository

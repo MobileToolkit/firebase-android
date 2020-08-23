@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 buildscript {
     repositories {
         google()
@@ -11,13 +13,22 @@ buildscript {
     }
 }
 
+val localProperties = gradleLocalProperties(rootDir)
+
 allprojects {
     val groupId by extra { "org.mobiletoolkit.android.firebase" }
     val vcsUrl by extra { "https://github.com/MobileToolkit/firebase-android.git" }
     repositories {
         google()
         jcenter()
-        maven("https://dl.bintray.com/mobiletoolkit/public")
+        maven("https://maven.pkg.github.com/MobileToolkit/extensions-android") {
+            credentials {
+                username = project.findProperty("gpr.githubUser") as String?
+                    ?: System.getenv("GITHUB_USER")
+                password = project.findProperty("gpr.githubToken") as String?
+                    ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.config.KotlinCompilerVersion
-
 plugins {
     id("com.android.library")
     id("com.jfrog.bintray")
@@ -20,8 +18,6 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.2.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.1")
     androidTestUtil("androidx.test:orchestrator:1.2.0")
-
-    testImplementation(kotlin("test-junit", KotlinCompilerVersion.VERSION))
 }
 
 publishing {

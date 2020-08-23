@@ -15,7 +15,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:${Versions.Androidx.APP_COMPAT}")
     implementation("androidx.recyclerview:recyclerview:${Versions.Androidx.RECYCLER_VIEW}")
     implementation("com.google.firebase:firebase-firestore:${Versions.Firebase.FIRESTORE}")
-    implementation("org.mobiletoolkit.android.extensions:extensions-kotlin:1.0.1")
+    implementation("org.mobiletoolkit.android.extensions:extensions-kotlin:1.2.0")
 
     androidTestImplementation("androidx.test:runner:1.2.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.1")
@@ -36,7 +36,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/MobileToolkit/firestore-android")
+            url = uri("https://maven.pkg.github.com/MobileToolkit/firebase-android")
             credentials {
                 username = project.findProperty("gpr.githubUser") as String? ?: System.getenv("GITHUB_USER")
                 password = project.findProperty("gpr.githubToken") as String? ?: System.getenv("GITHUB_TOKEN")

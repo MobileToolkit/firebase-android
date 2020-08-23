@@ -1,6 +1,6 @@
 package org.mobiletoolkit.android.repository.recyclerview
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import org.mobiletoolkit.android.repository.AsyncRepository
 import org.mobiletoolkit.android.repository.Model
 import kotlin.properties.Delegates

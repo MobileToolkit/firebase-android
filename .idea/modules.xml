@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/firebase-android.iml" filepath="$PROJECT_DIR$/firebase-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/firestore/firestore.iml" filepath="$PROJECT_DIR$/firestore/firestore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firebase-android.iml" filepath="$PROJECT_DIR$/firebase-android.iml" group="firebase-android" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/firebase-android_buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/firebase-android_buildSrc.iml" group="firebase-android/firebase-android_buildSrc" />
+      <module fileurl="file://$PROJECT_DIR$/firestore/firestore.iml" filepath="$PROJECT_DIR$/firestore/firestore.iml" group="firebase-android/firestore" />
     </modules>
   </component>
 </project>
